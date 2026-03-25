@@ -1,4 +1,4 @@
-import{c as l,j as e,m as s,L as a}from"./index-BztbzsoD.js";import{P as r}from"./mockData-CfmlfXRL.js";import{P as n}from"./ProductCard-BTr2SYZX.js";import{A as i}from"./arrow-right-DbFp4Ckw.js";/**
+import{c as l,j as e,m as s,L as a}from"./index-IG6rDW7p.js";import{P as r}from"./mockData-CfmlfXRL.js";import{P as n}from"./ProductCard-3DCNEtef.js";import{A as i}from"./arrow-right-CeCIKh80.js";/**
  * @license lucide-react v0.462.0 - ISC
  *
  * This source code is licensed under the ISC license.
