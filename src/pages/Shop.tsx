@@ -1,26 +1,67 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import heroShopImg from '@/assets/hero-shop.jpg';
-import { PRODUCTS } from '@/constants/mockData';
-import type { Category } from '@/types';
+import type { Category, Product } from '@/types';
 import ProductCard from '@/components/features/ProductCard';
 import CategoryFilter from '@/components/features/CategoryFilter';
+import { fetchAllProducts } from '@/services/productService';
 
 const Shop = () => {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [activeCategory, setActiveCategory] = useState<Category>('All');
     const [sortBy, setSortBy] = useState<'default' | 'low' | 'high'>('default');
 
+    useEffect(() => {
+        const loadProducts = async () => {
+            try {
+                const data = await fetchAllProducts();
+                setProducts(data);
+            } catch (err) {
+                setError('Failed to load products');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadProducts();
+    }, []);
+
     const filtered = useMemo(() => {
-        let items =
-            activeCategory === 'All'
-                ? PRODUCTS
-                : PRODUCTS.filter((p) => p.category === activeCategory);
+        let items = activeCategory === 'All'
+            ? products
+            : products.filter((p) => p.category === activeCategory);
 
         if (sortBy === 'low') items = [...items].sort((a, b) => a.priceUGX - b.priceUGX);
         if (sortBy === 'high') items = [...items].sort((a, b) => b.priceUGX - a.priceUGX);
 
         return items;
-    }, [activeCategory, sortBy]);
+    }, [products, activeCategory, sortBy]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-obsidian pt-24">
+                <div className="mx-auto max-w-[1400px] px-5 lg:px-10">
+                    <div className="text-center py-20">
+                        <p className="font-body text-sm text-foreground/50">Loading collection...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-obsidian pt-24">
+                <div className="mx-auto max-w-[1400px] px-5 lg:px-10">
+                    <div className="text-center py-20">
+                        <p className="font-body text-sm text-foreground/50">{error}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -42,7 +83,7 @@ const Shop = () => {
                         The Collection
                     </motion.h1>
                     <p className="mt-2 font-body text-sm text-foreground/45">
-                        {PRODUCTS.length} pieces crafted for the culture
+                        {products.length} pieces crafted for the culture
                     </p>
                 </div>
             </section>
@@ -53,7 +94,6 @@ const Shop = () => {
                     {/* Filter bar */}
                     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
-
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
@@ -83,7 +123,7 @@ const Shop = () => {
                     {/* Count */}
                     <div className="mt-10 text-center">
                         <p className="font-body text-xs text-foreground/25">
-                            Showing {filtered.length} of {PRODUCTS.length} products
+                            Showing {filtered.length} of {products.length} products
                         </p>
                     </div>
                 </div>
@@ -93,3 +133,4 @@ const Shop = () => {
 };
 
 export default Shop;
+

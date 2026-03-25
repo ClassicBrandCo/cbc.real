@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Menu, X } from 'lucide-react';
 import { NAV_LINKS, SITE_CONFIG } from '@/constants/config';
@@ -100,6 +101,7 @@ const Header = () => {
                     </div>
                 </div>
             </header>
+
 
             {/* Mobile menu overlay */}
             <AnimatePresence>

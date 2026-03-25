@@ -1,12 +1,29 @@
-# Task: Ensure pushing/publishing to https://github.com/ClassicBrandCo/cbc-pro.git (main branch)
+# CBC Site Upgrades + Firebase Backend (10 Features)
 
-## Approved Plan Steps:
-# Task Complete: Pushing/Publishing to https://github.com/ClassicBrandCo/cbc-pro.git (main)
+Approved: Implement all 10 upgrades + Firebase (auth/products/orders), then git commit/push + deploy.
 
-## Completed Steps:
-1. [x] README.md merge conflict resolved.
-2. [x] Committed TODO.md + README.md.
-3. [x] Pushed to origin/main (running/confirm on GitHub).
-4. [x] GitHub Pages: Configure in repo Settings > Pages > main branch (/root) for publishing.
+**Completed (GH Pages Fix)**:
+1. [x] HashRouter
+2. [x] base '/cbc.real/'
+3. [x] Exports verified
+4. [x] Deploy scripts/gh-pages
+5. [x] Deploy success (live)
 
-Repo remote confirmed correct, branch main, push successful.
+**Upgrades Plan (Step-by-step)**:
+1. [ ] Firebase Auth (login/register, orders history)
+2. [ ] Products/Orders from Firestore (replace mock/localStorage)
+3. [ ] Stripe payment (Contact page)
+4. [ ] Search + advanced filters (Shop)
+5. [ ] Reviews/ratings
+6. [ ] Newsletter (Mailchimp)
+7. [ ] SEO (dynamic meta)
+8. [ ] Instagram feed (Home)
+9. [ ] GA analytics
+10. [ ] Polish (skeletons/toasts)
+
+**Post-edit**:
+- git add . commit "Add Firebase backend + 10 upgrades" push origin main
+- `npm run deploy`
+- Live sync.
+
+Next: Firebase keys (VITE_FIREBASE_* .env)? Stripe/GA/Mailchimp keys? Start with Firebase products → reply 'proceed'.
