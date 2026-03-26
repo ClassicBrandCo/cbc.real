@@ -18,13 +18,15 @@ export const useCurrencyStore = create<CurrencyState>()(
                 set((state) => ({
                     currency: state.currency === 'UGX' ? 'USD' : 'UGX',
                 })),
-            formatPrice: (priceUGX: number) => {
+formatPrice: (priceUGX: number | undefined | null) => {
+                const safePrice = Number(priceUGX || 0);
                 const { currency, rate } = get();
                 if (currency === 'UGX') {
-                    return `UGX ${priceUGX.toLocaleString('en-US')}`;
+                    return `UGX ${safePrice.toLocaleString('en-US')}`;
                 }
-                return `$${(priceUGX / rate).toFixed(2)}`;
+                return `$${(safePrice / rate).toFixed(2)}`;
             },
+
         }),
         { name: 'cbc-currency' }
     )

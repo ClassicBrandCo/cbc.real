@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "39527851830",
+    "project_id": "classic-brand-co",
+    "storage_bucket": "classic-brand-co.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:39527851830:android:4e303e3cdad13c4bccb597",
+        "android_client_info": {
+          "package_name": "com.danielmac.classicbrandco.admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG0uBs6mnms86QTe-qOyXd0ZhEU4ZkHo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:39527851830:android:c64a48e9e4c04160ccb597",
+        "android_client_info": {
+          "package_name": "com.danielmac.classicbrandco.client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG0uBs6mnms86QTe-qOyXd0ZhEU4ZkHo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

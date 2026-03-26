@@ -25,10 +25,13 @@ export const CATEGORIES = [
     'Accessories',
 ] as const;
 
+export const ADMIN_EMAILS = ['admin@classicbrandco.com'] as const;
+
 export const NAV_LINKS = [
     { label: 'Home', path: '/' },
     { label: 'Shop', path: '/shop' },
     { label: 'About', path: '/about' },
     { label: 'Contact', path: '/contact' },
 ];
+
 

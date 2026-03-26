@@ -4,8 +4,10 @@ import Layout from '@/components/layout/Layout';
 import { AuthProvider } from '@/context/AuthContext';
 import LoadingSpinner from '@/components/features/LoadingSpinner';
 import NotFound from '@/pages/NotFound';
+import Admin from '@/pages/Admin';
 
 const Home = lazy(() => import('@/pages/Home'));
+
 const Shop = lazy(() => import('@/pages/Shop'));
 const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
 const About = lazy(() => import('@/pages/About'));
@@ -22,8 +24,10 @@ function App() {
                             <Route path="/shop" element={<Shop />} />
                             <Route path="/product/:id" element={<ProductDetail />} />
                             <Route path="/about" element={<About />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="*" element={<NotFound />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/admin" element={<Admin />} />
+                        <Route path="*" element={<NotFound />} />
+
                         </Routes>
                     </Suspense>
                 </Layout>

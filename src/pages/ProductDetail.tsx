@@ -11,7 +11,10 @@ import { cn } from '@/lib/utils';
 const ProductDetail = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const product = PRODUCTS.find((p) => p.id === id);
+    const [product, setProduct] = useState<Product | null>(null);
+    const [related, setRelated] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
     const { formatPrice } = useCurrencyStore();
     const { addItem, openCart } = useCartStore();
 
@@ -19,7 +22,34 @@ const ProductDetail = () => {
     const [quantity, setQuantity] = useState(1);
     const [added, setAdded] = useState(false);
 
-    if (!product) {
+    useEffect(() => {
+        const loadProduct = async () => {
+            try {
+                const p = await fetchProductById(id!);
+                if (p) {
+                    setProduct(p);
+                    const all = await fetchAllProducts();
+                    const rel = all.filter(
+                        (r) => r.category === p.category && r.id !== p.id
+                    ).slice(0, 4);
+                    setRelated(rel);
+                } else {
+                    setError(true);
+                }
+            } catch (err) {
+                setError(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadProduct();
+    }, [id]);
+
+    if (loading) {
+        return <LoadingSpinner />;
+    }
+
+    if (error || !product) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-obsidian pt-20">
                 <p className="font-display text-2xl text-foreground">Product not found</p>
@@ -33,9 +63,6 @@ const ProductDetail = () => {
         );
     }
 
-    const related = PRODUCTS.filter(
-        (p) => p.category === product.category && p.id !== product.id
-    ).slice(0, 4);
 
     const handleAddToCart = () => {
         if (!selectedSize) return;
@@ -81,6 +108,7 @@ const ProductDetail = () => {
                                 src={product.imageUrl}
                                 alt={product.name}
                                 className="size-full object-cover"
+                                onError={(e) => (e.currentTarget.src = '/placeholder.svg')}
                             />
                             {product.tag && (
                                 <span className="absolute left-4 top-4 rounded-sm bg-gold px-3 py-1 font-body text-xs font-semibold uppercase text-obsidian">

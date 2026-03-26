@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import AuthModal from '@/components/auth/AuthModal';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, User, Mail } from 'lucide-react';
 import { NAV_LINKS, SITE_CONFIG } from '@/constants/config';
 import CurrencyToggle from '@/components/features/CurrencyToggle';
 import { useCartStore } from '@/stores/cartStore';
 import { cn } from '@/lib/utils';
 
+
 const Header = () => {
+const { user, signOut, emailVerified, isAdmin } = useAuth();
+    const [authOpen, setAuthOpen] = useState(false);
     const location = useLocation();
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+
     const openCart = useCartStore((s) => s.openCart);
     const totalItems = useCartStore((s) => s.totalItems);
     const count = totalItems();
@@ -81,11 +87,48 @@ const Header = () => {
                                 )}
                             </Link>
                         ))}
+                        {isAdmin && (
+                            <Link
+                                to="/admin"
+                                className={cn(
+                                    'relative font-body text-[13px] font-bold uppercase text-gold bg-gold/10 px-3 py-2 rounded-full transition-all hover:bg-gold/20'
+                                )}
+                            >
+                                Admin
+                            </Link>
+                        )}
                     </nav>
+
 
                     {/* Right actions */}
                     <div className="flex items-center gap-3">
                         <CurrencyToggle />
+{user ? (
+                            <>
+                                <span className="hidden text-sm text-foreground sm:block">{user.email}</span>
+                                {!emailVerified && (
+                                  <div className="flex items-center gap-2 rounded-sm bg-amber-500/10 border border-amber-500/30 px-3 py-1 text-xs font-semibold text-amber-400">
+                                    <Mail className="size-3" />
+                                    Verify Email
+                                  </div>
+                                )}
+                                <button
+                                  onClick={signOut}
+                                  className="size-10 flex items-center justify-center rounded-full text-foreground hover:text-gold"
+                                  aria-label="Logout"
+                                >
+                                  <User className="size-5" />
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                onClick={() => setAuthOpen(true)}
+                                className="size-10 flex items-center justify-center rounded-full text-foreground hover:text-gold"
+                                aria-label="Login"
+                            >
+                                <User className="size-5" />
+                            </button>
+                        )}
                         <button
                             onClick={openCart}
                             className="relative flex size-10 items-center justify-center rounded-full text-foreground/70 transition-colors hover:text-gold"
@@ -99,6 +142,8 @@ const Header = () => {
                             )}
                         </button>
                     </div>
+                    <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+
                 </div>
             </header>
 

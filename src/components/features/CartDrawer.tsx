@@ -1,4 +1,6 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Trash2, Minus, Plus } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
@@ -7,6 +9,10 @@ import { cn } from '@/lib/utils';
 import type { CartItem } from '@/types';
 
 const CartDrawer = () => {
+    const navigate = useNavigate();
+
+    console.log('useNavigate:', typeof useNavigate === 'function' ? 'OK' : 'ERROR');
+
     const { isOpen, closeCart, items, removeItem, updateQuantity, totalPriceUGX } = useCartStore();
     const { formatPrice } = useCurrencyStore();
     const cartTotal = totalPriceUGX();
@@ -148,7 +154,7 @@ const CartDrawer = () => {
                             <button
                                 onClick={() => {
                                     closeCart();
-                                    window.location.href = '/contact';
+                                    navigate('/contact');
                                 }}
                                 className="mt-4 w-full rounded-sm bg-gold py-4 font-body text-sm font-semibold uppercase text-obsidian transition-colors hover:bg-gold-300"
                             >
@@ -169,4 +175,5 @@ const CartDrawer = () => {
 };
 
 export default CartDrawer;
+
 

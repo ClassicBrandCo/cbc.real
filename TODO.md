@@ -1,29 +1,20 @@
-# CBC Site Upgrades + Firebase Backend (10 Features)
+# Admin Dashboard Implementation
 
-Approved: Implement all 10 upgrades + Firebase (auth/products/orders), then git commit/push + deploy.
+## Plan Details:
+**Information Gathered**: App.tsx routes ready (AuthProvider), productService.ts Firestore products, Header uses useAuth. shadcn Tabs/Table ready.
 
-**Completed (GH Pages Fix)**:
-1. [x] HashRouter
-2. [x] base '/cbc.real/'
-3. [x] Exports verified
-4. [x] Deploy scripts/gh-pages
-5. [x] Deploy success (live)
+**Core Changes**:
+1. constants/config.ts: Add ADMIN_EMAILS = ['admin@classicbrandco.com'].
+2. AuthContext: Add isAdmin = ADMIN_EMAILS.includes(user?.email ?? '').
+3. src/pages/Admin.tsx: Tabs (Products: Table + Add form; Orders: Table status dropdown).
+4. App.tsx: Add Route /admin element={<ProtectedRoute><Admin /></ProtectedRoute>}.
+5. ProtectedRoute HOC: if !user || !isAdmin → navigate('/').
+6. Header: Add Admin link if isAdmin.
+7. orderService.ts: Firestore orders queries/updates (add).
 
-**Upgrades Plan (Step-by-step)**:
-1. [ ] Firebase Auth (login/register, orders history)
-2. [ ] Products/Orders from Firestore (replace mock/localStorage)
-3. [ ] Stripe payment (Contact page)
-4. [ ] Search + advanced filters (Shop)
-5. [ ] Reviews/ratings
-6. [ ] Newsletter (Mailchimp)
-7. [ ] SEO (dynamic meta)
-8. [ ] Instagram feed (Home)
-9. [ ] GA analytics
-10. [ ] Polish (skeletons/toasts)
+**Dependent Files**: types/index.ts (add Admin fields?), services/orderService.ts (create).
 
-**Post-edit**:
-- git add . commit "Add Firebase backend + 10 upgrades" push origin main
-- `npm run deploy`
-- Live sync.
+**Follow-up**: npm run build/deploy, set admin email in Firebase (console or Functions), test /admin.
 
-Next: Firebase keys (VITE_FIREBASE_* .env)? Stripe/GA/Mailchimp keys? Start with Firebase products → reply 'proceed'.
+Approve to implement!
+
