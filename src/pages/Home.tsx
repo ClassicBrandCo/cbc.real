@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowRight, Crown, Gem, Star } from 'lucide-react';
 import heroImg from '@/assets/hero-main.jpg';
-import { fetchAllProducts } from '@/services/productService';
+import { useProducts } from '@/services/firestoreService';
 import ProductCard from '@/components/features/ProductCard';
 import LoadingSpinner from '@/components/features/LoadingSpinner';
-import { useState, useEffect } from 'react';
 
 const PILLARS = [
   {
@@ -26,23 +25,10 @@ const PILLARS = [
 ];
 
 const Home = () => {
-  const [featured, setFeatured] = useState([]);
-  const [loading, setLoading] = useState(true);
-// const ref = useInView({ amount: 0.2 });
+  const { data: products = [], isLoading } = useProducts(20, 1);
+  const featured = products.filter((p) => p.featured).slice(0, 8);
 
-  useEffect(() => {
-    fetchAllProducts()
-      .then((products) => {
-        const featuredProducts = products.filter((p) => p.featured).slice(0, 8);
-        setFeatured(featuredProducts);
-      })
-      .catch((error) => {
-        console.warn('Featured load error:', error);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 
@@ -177,7 +163,7 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
             {featured.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
+              <ProductCard key={product.id} product={product as any} index={i} />
             ))}
           </div>
           <div className="mt-10 text-center sm:hidden">
@@ -193,9 +179,9 @@ const Home = () => {
       </section>
 
       {/* Rest unchanged */}
-      {/* Brand split, stats, CTA */}
     </div>
   );
 };
 
 export default Home;
+

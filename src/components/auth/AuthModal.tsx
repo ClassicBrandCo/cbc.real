@@ -1,303 +1,214 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/context/AuthContext';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { Product } from '@/types';
+import { Loader2, Mail, User } from 'lucide-react'; // Removed unused Google icon import
+import { toast } from 'sonner';
 
-export default function Admin() {
-  const { user } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    priceUGX: '',
-    category: '',
-    description: '',
-    imageUrl: '',
-    sizes: 'S,M,L,XL',
-    inStock: true,
-    featured: false,
-    tag: '',
-  });
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-  // Admin check – replace with your own logic (e.g., email list or custom claim)
-  const isAdmin = user?.email === 'admin@example.com'; // CHANGE THIS TO YOUR ADMIN EMAIL
+const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
+  const [tab, setTab] = useState<'login' | 'signup'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isAdmin) return;
-    loadProducts();
-    loadOrders();
-  }, [isAdmin]);
+  const { signInWithGoogle, signIn, signUp, sendPasswordReset } = useAuth();
 
-  const loadProducts = async () => {
-    const snapshot = await getDocs(collection(db, 'products'));
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-    setProducts(data);
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      toast.success('Signed in successfully with Google');
+      onClose();
+    } catch (error: any) {
+      toast.error(error.message || 'Google sign in failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loadOrders = async () => {
-    const snapshot = await getDocs(collection(db, 'orders'));
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setOrders(data);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const productData = {
-      name: formData.name,
-      price: Number(formData.priceUGX),
-      category: formData.category,
-      description: formData.description,
-      imageUrl: formData.imageUrl,
-      sizes: formData.sizes.split(',').map(s => s.trim()),
-      inStock: formData.inStock,
-      featured: formData.featured,
-      tag: formData.tag || '',
-    };
-    if (editingProduct) {
-      await updateDoc(doc(db, 'products', editingProduct.id), productData);
-    } else {
-      await addDoc(collection(db, 'products'), productData);
+    if (!email || !password) {
+      toast.error('Please fill in all fields');
+      return;
     }
-    resetForm();
-    loadProducts();
-  };
 
-  const deleteProduct = async (id: string) => {
-    if (confirm('Delete product?')) {
-      await deleteDoc(doc(db, 'products', id));
-      loadProducts();
+    setLoading(true);
+    try {
+      if (tab === 'login') {
+        await signIn(email, password);
+        toast.success('Signed in successfully');
+      } else {
+        await signUp(email, password);
+        toast.success('Account created successfully');
+      }
+      onClose();
+    } catch (error: any) {
+      toast.error(error.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setEditingProduct(null);
-    setFormData({
-      name: '',
-      priceUGX: '',
-      category: '',
-      description: '',
-      imageUrl: '',
-      sizes: 'S,M,L,XL',
-      inStock: true,
-      featured: false,
-      tag: '',
-    });
+  const handleResetPassword = async () => {
+    if (!email) {
+      toast.error('Please enter your email first');
+      return;
+    }
+    try {
+      await sendPasswordReset(email);
+      toast.success('Password reset email sent! Check your inbox.');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send reset email');
+    }
   };
-
-  const editProduct = (product: Product) => {
-    setEditingProduct(product);
-    setFormData({
-      name: product.name,
-      priceUGX: product.priceUGX.toString(),
-      category: product.category,
-      description: product.description || '',
-      imageUrl: product.imageUrl || '',
-      sizes: product.sizes?.join(',') || 'S,M,L,XL',
-      inStock: product.inStock !== false,
-      featured: product.featured || false,
-      tag: product.tag || '',
-    });
-  };
-
-  if (!isAdmin) {
-    return <div className="text-center py-20 text-red-500">Access Denied – Admins only.</div>;
-  }
 
   return (
-    <div className="max-w-7xl mx-auto px-5 py-10">
-      <h1 className="text-3xl font-display font-bold text-gold mb-8">Admin Dashboard</h1>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md p-0 sm:max-w-lg">
+        <DialogHeader className="p-6 pb-4 border-b">
+          <DialogTitle className="text-2xl font-display text-center">
+            Welcome to Classic Brand Co
+          </DialogTitle>
+        </DialogHeader>
 
-      <div className="flex gap-4 border-b border-gold/20 mb-6">
-        <button
-          onClick={() => setActiveTab('products')}
-          className={`pb-2 px-4 font-semibold ${activeTab === 'products' ? 'border-b-2 border-gold text-gold' : 'text-foreground/60'}`}
-        >
-          Products
-        </button>
-        <button
-          onClick={() => setActiveTab('orders')}
-          className={`pb-2 px-4 font-semibold ${activeTab === 'orders' ? 'border-b-2 border-gold text-gold' : 'text-foreground/60'}`}
-        >
-          Orders
-        </button>
-      </div>
+        <div className="p-6">
+          <Tabs
+            value={tab}
+            onValueChange={(v: 'login' | 'signup') => setTab(v)}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
 
-      {activeTab === 'products' && (
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Form */}
-          <div className="bg-obsidian-100 p-6 rounded-lg border border-gold/20">
-            <h2 className="text-xl font-display mb-4">{editingProduct ? 'Edit Product' : 'Add New Product'}</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-2 rounded border border-obsidian-50 bg-obsidian-900/30 text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Price (UGX)</label>
-                <input
-                  type="number"
-                  required
-                  value={formData.priceUGX}
-                  onChange={e => setFormData({ ...formData, priceUGX: e.target.value })}
-                  className="w-full p-2 rounded border border-obsidian-50 bg-obsidian-900/30 text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.category}
-                  onChange={e => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full p-2 rounded border border-obsidian-50 bg-obsidian-900/30 text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  rows={3}
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full p-2 rounded border border-obsidian-50 bg-obsidian-900/30 text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Image URL</label>
-                <input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full p-2 rounded border border-obsidian-50 bg-obsidian-900/30 text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Sizes (comma separated)</label>
-                <input
-                  type="text"
-                  value={formData.sizes}
-                  onChange={e => setFormData({ ...formData, sizes: e.target.value })}
-                  className="w-full p-2 rounded border border-obsidian-50 bg-obsidian-900/30 text-foreground"
-                />
-              </div>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.inStock}
-                    onChange={e => setFormData({ ...formData, inStock: e.target.checked })}
-                  />
-                  In Stock
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.featured}
-                    onChange={e => setFormData({ ...formData, featured: e.target.checked })}
-                  />
-                  Featured
-                </label>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tag (e.g., Bestseller, New)</label>
-                <input
-                  type="text"
-                  value={formData.tag}
-                  onChange={e => setFormData({ ...formData, tag: e.target.value })}
-                  className="w-full p-2 rounded border border-obsidian-50 bg-obsidian-900/30 text-foreground"
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  className="bg-gold text-obsidian px-6 py-2 rounded font-semibold hover:bg-yellow-400"
-                >
-                  {editingProduct ? 'Update' : 'Create'}
-                </button>
-                {editingProduct && (
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="border border-gold/50 text-gold px-6 py-2 rounded font-semibold hover:bg-gold/10"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
+            {/* Google Button - Common for both tabs */}
+            <Button
+              onClick={handleGoogleSignIn}
+              className="w-full justify-center gap-2 mb-6"
+              variant="outline"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <User className="size-4" />
+              )}
+              Continue with Google
+            </Button>
 
-          {/* Product List */}
-          <div className="bg-obsidian-100 p-6 rounded-lg border border-gold/20 overflow-auto max-h-[600px]">
-            <h2 className="text-xl font-display mb-4">Product List</h2>
-            <div className="space-y-3">
-              {products.map(p => (
-                <div key={p.id} className="flex justify-between items-center border-b border-obsidian-50 pb-2">
-                  <div>
-                    <span className="font-medium">{p.name}</span>
-                    <span className="text-sm text-foreground/60 ml-2">UGX {p.priceUGX}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => editProduct(p)}
-                      className="text-gold hover:text-yellow-400 text-sm"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteProduct(p.id)}
-                      className="text-red-400 hover:text-red-500 text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-foreground/20" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-foreground/50">or continue with email</span>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {activeTab === 'orders' && (
-        <div className="bg-obsidian-100 p-6 rounded-lg border border-gold/20 overflow-auto">
-          <h2 className="text-xl font-display mb-4">Orders</h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-obsidian-50">
-                <th className="text-left py-2">Date</th>
-                <th className="text-left py-2">Customer</th>
-                <th className="text-left py-2">Total</th>
-                <th className="text-left py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map(order => (
-                <tr key={order.id} className="border-b border-obsidian-50/50">
-                  <td className="py-2">{order.createdAt?.toDate?.().toLocaleDateString() || 'N/A'}</td>
-                  <td className="py-2">{order.customer?.fullName || order.customer?.email || '?'}</td>
-                  <td className="py-2">UGX {order.totalUGX?.toLocaleString()}</td>
-                  <td className="py-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.status === 'completed' ? 'bg-green-900 text-green-300' :
-                        order.status === 'pending' ? 'bg-yellow-900 text-yellow-300' :
-                          'bg-gray-800 text-gray-300'
-                      }`}>
-                      {order.status || 'pending'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <TabsContent value="login" className="space-y-4">
+              <form onSubmit={handleEmailSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
+                </Button>
+              </form>
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-0 text-sm text-foreground/60 hover:text-foreground"
+                onClick={handleResetPassword}
+                type="button"
+              >
+                <Mail className="mr-2 size-4" />
+                Forgot Password?
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="signup" className="space-y-4">
+              <form onSubmit={handleEmailSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="Create a strong password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </div>
-      )}
-    </div>
+
+        <div className="px-6 py-4 border-t text-center text-xs text-foreground/50">
+          By continuing, you agree to our Terms and Privacy Policy.
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-}
+};
+
+export default AuthModal;

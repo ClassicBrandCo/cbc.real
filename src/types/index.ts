@@ -40,3 +40,6 @@ export interface Order {
 export type Currency = 'UGX' | 'USD';
 
 export type Category = 'All' | 'T-Shirts' | 'Hoodies' | 'Caps' | 'Pants' | 'Jackets' | 'Accessories';
+
+export * from './firebase';
+

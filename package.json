@@ -59,7 +59,7 @@
     "crypto-js": "^4.2.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
-    "firebase": "^10.13.1",
+    "firebase": "^12.6.1",
     "framer-motion": "^11.3.30",
     "hls.js": "^1.5.5",
     "input-otp": "^1.2.6",
@@ -69,8 +69,8 @@
     "next-themes": "^0.3.0",
     "qrcode": "^1.5.3",
     "react": "^18.3.1",
-    "react-calendar": "^5.2.2",
-    "react-day-picker": "^8.12.1",
+    "react-calendar": "^6.0.0",
+    "react-day-picker": "^9.14.0",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.3.9",
     "react-helmet-async": "^2.0.5",
@@ -111,4 +111,3 @@
     "vite": "^5.4.1"
   }
 }
-

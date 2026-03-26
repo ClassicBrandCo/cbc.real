@@ -1,64 +1,32 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import heroShopImg from '@/assets/hero-shop.jpg';
 import type { Category, Product } from '@/types';
 import ProductCard from '@/components/features/ProductCard';
 import CategoryFilter from '@/components/features/CategoryFilter';
-import { fetchAllProducts } from '@/services/productService';
+import { useProducts } from '@/services/firestoreService';
+import LoadingSpinner from '@/components/features/LoadingSpinner';
 
 const Shop = () => {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [activeCategory, setActiveCategory] = useState<Category>('All');
     const [sortBy, setSortBy] = useState<'default' | 'low' | 'high'>('default');
-
-    useEffect(() => {
-        const loadProducts = async () => {
-            try {
-                const data = await fetchAllProducts();
-                setProducts(data);
-            } catch (err) {
-                setError('Failed to load products');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadProducts();
-    }, []);
+    const { data: products = [], isLoading } = useProducts(100, 1);  // Load more for filtering
 
     const filtered = useMemo(() => {
         let items = activeCategory === 'All'
             ? products
-            : products.filter((p) => p.category === activeCategory);
+            : products.filter((p: Product) => p.category === activeCategory);
 
-        if (sortBy === 'low') items = [...items].sort((a, b) => a.priceUGX - b.priceUGX);
-        if (sortBy === 'high') items = [...items].sort((a, b) => b.priceUGX - a.priceUGX);
+        if (sortBy === 'low') items = [...items].sort((a, b) => (a.priceUGX || 0) - (b.priceUGX || 0));
+        if (sortBy === 'high') items = [...items].sort((a, b) => (b.priceUGX || 0) - (a.priceUGX || 0));
 
         return items;
     }, [products, activeCategory, sortBy]);
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-obsidian pt-24">
-                <div className="mx-auto max-w-[1400px] px-5 lg:px-10">
-                    <div className="text-center py-20">
-                        <p className="font-body text-sm text-foreground/50">Loading collection...</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="min-h-screen bg-obsidian pt-24">
-                <div className="mx-auto max-w-[1400px] px-5 lg:px-10">
-                    <div className="text-center py-20">
-                        <p className="font-body text-sm text-foreground/50">{error}</p>
-                    </div>
-                </div>
+                <LoadingSpinner />
             </div>
         );
     }
@@ -108,7 +76,7 @@ const Shop = () => {
                     {/* Product grid */}
                     {filtered.length > 0 ? (
                         <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-                            {filtered.map((product, i) => (
+                            {filtered.map((product: Product, i: number) => (
                                 <ProductCard key={product.id} product={product} index={i} />
                             ))}
                         </div>
